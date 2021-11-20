@@ -2,17 +2,21 @@ class Boid {
   PVector pos;
   PVector vel;
   PVector acc;
-  
-  float maxAcc = 1;
-  float maxVel = 2.0;
-  
+
+  // Aceleração e Velocidade maxima;
+  float maxAcc = 0.1;
+  float maxVel = 1.7;
+
+  // Distancias de percepção e força de separação
   float flockCollRadius = 20;
   float maxFlockCollForce = 300;
   float flockFollowRadius = 50;
-  
+
+  // Distancia das bordas do canvas e força da borda
   float borders = 50;
   float borderForce = 10;
-  
+
+  // Tamanho do desenho do Boid
   float boidSize = 2;
 
   Boid(float x, float y){
@@ -20,43 +24,58 @@ class Boid {
     vel = new PVector(random(-1, 1),random(-1, 1));
     acc = new PVector(0,0);
   }
-  
+
+  // Atualiza os vetores de força e aceleração do boid
+  // de acordo com a posição relativa dele aos outros e as bordas
   void update(Boid[] others){
     for(int i = 0; i < others.length; i++)
     {
+      // Pula a verificação caso se encontre
       if(others[i].pos == pos) continue;
-      PVector diff = PVector.sub(pos, others[i].pos);
-      followFlock(others[i], diff);
-      collisionFlock(diff);
+
+      followFlock(others[i]);
+      collisionFlock(others[i]);
     }
+
     collisionWalls();
+
+    // Limita a aceleração
     if(acc.mag() > maxAcc)
     {
       acc.setMag(maxAcc);
     }
+
     vel.add(acc);
+    // Limita a Velocidade
     if(vel.mag() > maxVel){
       vel.setMag(maxVel);
     }
+
     pos.add(vel);
   }
-  
-  void collisionFlock(PVector diff){
-      if(diff.mag() < flockCollRadius)
-      {
-        float xForce = (diff.x > 0 ? 1 : -1) * map(abs(diff.x), 0, flockCollRadius, maxFlockCollForce, 0);
-        float yForce = (diff.y > 0 ? 1 : -1) * map(abs(diff.y), 0, flockCollRadius, maxFlockCollForce, 0);
-        acc.add(xForce, yForce);
-      }
+
+  // Verifica se Boid está proximo de colidir e se afasta
+  void collisionFlock(Boid other){
+    PVector diff = PVector.sub(pos, other.pos);
+    if(diff.mag() < flockCollRadius)
+    {
+      float xForce = (diff.x > 0 ? 1 : -1) * map(abs(diff.x), 0, flockCollRadius, maxFlockCollForce, 0);
+      float yForce = (diff.y > 0 ? 1 : -1) * map(abs(diff.y), 0, flockCollRadius, maxFlockCollForce, 0);
+      acc.add(xForce, yForce);
+    }
   }
-  
-  void followFlock(Boid other, PVector diff){
-      if(diff.mag() < flockFollowRadius)
-      {
-        acc.add(PVector.add(vel, other.vel));
-      }
+
+  // Verifica se boid é vizinho e se ajusta para ter mesma direção
+  void followFlock(Boid other){
+    PVector diff = PVector.sub(pos, other.pos);
+    if(diff.mag() < flockFollowRadius)
+    {
+      acc.add(PVector.add(vel, other.vel));
+    }
   }
-  
+
+  // Verifica proximidade das bordas do canvas e
+  // força boid a retornar caso passe
   void collisionWalls() {
     if(pos.x > width-borders){
       acc.add(-borderForce, 0);
@@ -71,7 +90,11 @@ class Boid {
       acc.add(0, -borderForce);
     }
   }
-  
+
+  // Desenha o Boid no canvas usando
+  // pushMatrix e popMatrix para rotate e
+  // translate não afetarem outros boids desenhados
+  // retornando ao estado padrão a cada fim
   void show(){
     noFill();
     pushMatrix();
