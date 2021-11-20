@@ -1,5 +1,5 @@
 Boid[] boids;
-int numBoids= 1000;
+int numBoids= 500;
 
 void setup() {
   size(1900,1000);

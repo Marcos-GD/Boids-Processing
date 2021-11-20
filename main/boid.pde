@@ -4,13 +4,15 @@ class Boid {
   PVector acc;
 
   // Aceleração e Velocidade maxima;
-  float maxAcc = 0.1;
-  float maxVel = 1.7;
+  float maxAcc = 0.05;
+  float maxVel = 1;
 
   // Distancias de percepção e força de separação
-  float flockCollRadius = 20;
-  float maxFlockCollForce = 300;
-  float flockFollowRadius = 50;
+  float separationRadius = 20;
+  float maxSeparationForce = 150;
+  float alignmentRadius = 70;
+  float cohesionRadius = 70;
+  float cohesionFactor = 0.02;
 
   // Distancia das bordas do canvas e força da borda
   float borders = 50;
@@ -33,8 +35,9 @@ class Boid {
       // Pula a verificação caso se encontre
       if(others[i].pos == pos) continue;
 
-      followFlock(others[i]);
-      collisionFlock(others[i]);
+      separation(others[i]);
+      alignment(others[i]);
+      cohesion(others[i]);
     }
 
     collisionWalls();
@@ -55,22 +58,31 @@ class Boid {
   }
 
   // Verifica se Boid está proximo de colidir e se afasta
-  void collisionFlock(Boid other){
+  void separation(Boid other){
     PVector diff = PVector.sub(pos, other.pos);
-    if(diff.mag() < flockCollRadius)
+    if(diff.mag() < separationRadius)
     {
-      float xForce = (diff.x > 0 ? 1 : -1) * map(abs(diff.x), 0, flockCollRadius, maxFlockCollForce, 0);
-      float yForce = (diff.y > 0 ? 1 : -1) * map(abs(diff.y), 0, flockCollRadius, maxFlockCollForce, 0);
+      float xForce = (diff.x > 0 ? 1 : -1) * map(abs(diff.x), 0, separationRadius, maxSeparationForce, 0);
+      float yForce = (diff.y > 0 ? 1 : -1) * map(abs(diff.y), 0, separationRadius, maxSeparationForce, 0);
       acc.add(xForce, yForce);
     }
   }
 
   // Verifica se boid é vizinho e se ajusta para ter mesma direção
-  void followFlock(Boid other){
+  void alignment(Boid other){
     PVector diff = PVector.sub(pos, other.pos);
-    if(diff.mag() < flockFollowRadius)
+    if(diff.mag() < alignmentRadius)
     {
       acc.add(PVector.add(vel, other.vel));
+    }
+  }
+
+  void cohesion(Boid other){
+    PVector diff = PVector.sub(pos, other.pos);
+    if(diff.mag() < cohesionRadius)
+    {
+      diff.mult(-1*cohesionFactor);
+      acc.add(diff.x, diff.y);
     }
   }
 
