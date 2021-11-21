@@ -4,7 +4,7 @@ class Boid {
   PVector acc;
 
   // Aceleração e Velocidade maxima;
-  float maxAcc = 0.05;
+  float maxAcc = 0.03;
   float maxVel = 1;
 
   // Distancias de percepção e força de separação
@@ -92,13 +92,13 @@ class Boid {
     if(pos.x > width-borders){
       acc.add(-borderForce, 0);
     }
-    if(pos.x < borders){
+    else if(pos.x < borders){
       acc.add(borderForce, 0);
     }
-    if(pos.y < borders){
+    else if(pos.y < borders){
       acc.add(0, borderForce);
     }
-    if(pos.y > height-borders){
+    else if(pos.y > height-borders){
       acc.add(0, -borderForce);
     }
   }
@@ -111,12 +111,12 @@ class Boid {
     noFill();
     pushMatrix();
     translate(pos.x, pos.y);
-    rotate(atan2(vel.x, -vel.y));
+    rotate(vel.heading());
     beginShape();
-    vertex(0, -boidSize);
-    vertex(boidSize, 2*boidSize);
-    vertex(0, boidSize);
-    vertex(-boidSize, 2*boidSize);
+    vertex(-boidSize, 0);
+    vertex(-2*boidSize, boidSize);
+    vertex(boidSize, 0);
+    vertex(-2*boidSize, -boidSize);
     endShape(CLOSE);
     popMatrix();
   }
